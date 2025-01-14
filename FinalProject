@@ -1,0 +1,342 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+//DGD203-AtaGüler-GameProgramming1FinalProject
+
+
+namespace TextAdventureGame //ProjeAdı
+{
+    class Program
+    {
+        static List<string> inventory = new List<string>();   //Oyuncunun topladığı nesneleri saklar
+        static bool hasFoundAllClues = false;  //Oyuncunun bulduğu ipuçlarını kaydeder
+        static string currentLocation = "Town Square";  //Oyuncunun başlangıç konumunu belirler
+        const string saveFile = "savegame.txt";  //Oyuncunun kayıt dosyasının adı
+
+        static void Main(string[] args)
+        {
+            MainMenu();  //Aana menüye gönderir
+        }
+
+        static void MainMenu()
+        {
+            Console.Clear(); //konsoldaki bir önceki yazıları temizler her sahne öncesi yinelenir
+            Console.WriteLine("Welcome to the Mystery in the Town!");  //Bu satırlar Ana menüde yazdırlır başlarındaki numaralar switch kısmında oyuncunun vereceği karar içindir
+            Console.WriteLine("1. New Game");
+            Console.WriteLine("2. Load Game");
+            Console.WriteLine("3. Credits");
+            Console.WriteLine("4. Exit");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)  //oyuncu vereceği karara göre 1,2,3 veya 4'ü konsola yazarak istedği yere yönlendirilir eğer verilen seçeneklerden birini kosnola yazmazsa hata alır
+            {
+                case "1": //Oyuncu 1 yazdığı takdirde StartGame'e Yönlendirilir
+                    StartGame();
+                    break;
+                case "2": //Oyuncu 2 yazdığı takdirde LoadGame'e Yönlendirilir
+                    LoadGame();
+                    break;
+                case "3":
+                    ShowCredits(); //Oyuncu 3 yazdığı takdirde ShowCredits'e Yönlendirilir
+                    break;
+                case "4":
+                    ExitGame(); //Oyuncu 4 yazdığı takdirde ExitGame'e Yönlendirilir
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice. Press any key to try again."); //Eğer oyuncu 1,2,3 ve 4'den birini yazmazsa konsolda "Invalid choice. Press any key to try again." yazar ve tekrardan MainMenu'ye yönlendirlir
+                    Console.ReadKey();
+                    MainMenu();
+                    break;
+            }
+        }
+
+        static void StartGame()
+        {
+            Console.Clear();
+            inventory.Clear();
+            hasFoundAllClues = false; //Oyuncunun tüm ipuçlarını bulamadığını gösterir
+            currentLocation = "Town Square";
+            Console.WriteLine("You find yourself standing in the town square. The mystery begins here.");
+            GameLoop();
+        }
+
+        static void ShowCredits()   
+        {
+            Console.Clear();
+            Console.WriteLine("Mystery in the Town");
+            Console.WriteLine("Developed by: Ata Güler for GameProgramming 1"); 
+            Console.WriteLine("Special thanks to players like you!");
+            Console.WriteLine("Press any key to return to the main menu."); //oyuncu basacağı herhangi bir tışla ana menüye yönlendirlir(aşşağıdaki satır sayeszine)
+            Console.ReadKey();
+            MainMenu();
+        }
+
+        static void ExitGame()
+        {
+            Console.Clear();
+            Console.WriteLine("Thank you for playing.");
+            Environment.Exit(0); //oyuncuyu oyundan çıkarır
+        }
+
+        static void GameLoop() //Bu fonskiyon oyunun döngüsünu sağlar oyuncu bir mekandan çıktığında otomatik olarak buraya yönlendirlir ve istediği yere gider gittiği yere görede bir yazı belirir ve oyundan çıkma seçeneği sunar
+        {
+            Dictionary<string, string> locations = new Dictionary<string, string>
+            {
+                { "Town Square", "You are in the bustling town square. There are paths leading to a house, the police station, and a bar." },
+                { "House", "You are at the house. It looks like the scene of a crime. You might find clues here." },
+                { "Police Station", "You are in the police station. Maybe there are some files or evidence to look at." },
+                { "Bar", "You are in the bar. The bartender seems like they have something to say." }
+            };
+
+            while (!hasFoundAllClues)
+            {
+                Console.Clear();
+                Console.WriteLine(locations[currentLocation]);
+
+                switch (currentLocation)
+                {
+                    case "House":
+                        InvestigateHouse();
+                        break;
+                    case "Bar":
+                        TalkToBartender();
+                        break;
+                    case "Police Station":
+                        InvestigatePoliceStation();
+                        break;
+                }
+
+                Console.WriteLine("\nWhere would you like to go?");
+                Console.WriteLine("1. House");
+                Console.WriteLine("2. Police Station");
+                Console.WriteLine("3. Bar");
+                Console.WriteLine("4. Town Square");
+                Console.WriteLine("5. Save Game");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        currentLocation = "House";
+                        break;
+                    case "2":
+                        currentLocation = "Police Station";
+                        break;
+                    case "3":
+                        currentLocation = "Bar";
+                        break;
+                    case "4":
+                        currentLocation = "Town Square";
+                        break;
+                    case "5":
+                        SaveGame();
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Press any key to try again.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+
+            EndGame();
+        }
+
+        static void InvestigateHouse() //Bu satırlar oyuncunun ev içinde gezmesini ve bir takım ipuçlarını elde edebilmseini sağlar
+        {
+            Console.WriteLine("You are in the house. Where would you like to investigate?");
+            Console.WriteLine("1. Living Room");
+            Console.WriteLine("2. Kitchen");
+            Console.WriteLine("3. Bedroom");
+            Console.WriteLine("4. Basement");
+
+            string choice = Console.ReadLine(); //Oyuncunun odalardan birini seçmesini ister ve oyuncu yatak odasını seçerse anahtar objesini elde eder bu sayede oyunda ilerleme sağplayabilir
+            switch (choice)
+            {
+                case "1":
+                    Console.WriteLine("In the living room, you find a broken vase and a trail of muddy footprints."); //oyuncuya salonda bulunan bir takım izlerin olduğunu gösterir
+                    break;  
+                case "2":
+                    Console.WriteLine("In the kitchen, you find a knife missing from the knife block."); //mutfakta bırakılmış bir bıçak olduğuınu oyuncuya gösterir
+                    break;
+                case "3":
+                    Console.WriteLine("In the bedroom, you find a key on the floor.");
+                    if (!inventory.Contains("Key")) 
+                    {
+                        Console.WriteLine("You picked up the key!");
+                        inventory.Add("Key"); //Oyuncu Anahtarı envanterine ekler
+                    }
+                    else
+                    {
+                        Console.WriteLine("You have already taken the key.");
+                    }
+                    break;
+                case "4":
+                    Console.WriteLine("The basement is dark and eerie. You find a locked box here."); //Bu bölgede kilitli bir kasa bulduğumuzu ve ancak anahtarı bulduğumuz tkidrde onu açabilceğimizi oyumncuya belirtir ve eğer oyuncu anahtarı bulabildiyse onu açma şansına sajhip olur
+                    if (inventory.Contains("Key"))
+                    {
+                        Console.WriteLine("You use the key to open the box and find a torn photograph."); //kasayı açrığında bir fotoğraf elde edersin
+                        inventory.Add("Photograph"); //envantere bir fotoğraf ekler
+                    }
+                    else
+                    {
+                        Console.WriteLine("The box is locked. You need a key to open it."); //anahtar yoksa yazdırır
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice. Returning to the main house area.");
+                    break;
+            }
+            Console.WriteLine("Press any key to continue.");
+            Console.ReadKey();
+        }
+
+        static void TalkToBartender() //barmenle konuşma 
+        {
+            Console.WriteLine("The bartender greets you. You can ask questions:");
+            Console.WriteLine("1. Did you see anything suspicious?");
+            Console.WriteLine("2. Do you know the victim?");
+            Console.WriteLine("3. Who do you think is the suspect?");
+            Console.WriteLine("4. What do you know about the key?");
+            Console.WriteLine("5. Do you know anything about the photograph?");
+
+            string choice = Console.ReadLine();
+            switch (choice)
+            {
+                case "1":
+                    Console.WriteLine("The bartender says: 'I saw someone leaving the house late at night. They were wearing a black coat.'");
+                    break;
+                case "2":
+                    Console.WriteLine("The bartender says: 'The victim used to come here often. They seemed troubled lately.'");
+                    break;
+                case "3":
+                    Console.WriteLine("The bartender says: 'I don’t want to accuse anyone, but the person in the black coat looked suspicious.'");
+                    break;
+                case "4":
+                    Console.WriteLine("The bartender says: 'That key you found looks like it could open something important at the police station.'");
+                    break;
+                case "5":
+                    Console.WriteLine("The bartender says: 'That photograph... it might be connected to the victim’s past.'");
+                    break;
+                default:
+                    Console.WriteLine("The bartender doesn’t understand your question.");
+                    break;
+            }
+            Console.WriteLine("Press any key to continue.");
+            Console.ReadKey();
+        }
+
+        static void InvestigatePoliceStation()
+        {
+            Console.WriteLine("You look through the police files. You can:");
+            Console.WriteLine("1. Search for witness statements.");
+            Console.WriteLine("2. Check the suspect’s file.");
+            Console.WriteLine("3. Use the key to open a locked drawer.");
+            Console.WriteLine("4. Compare evidence with the photograph.");
+
+            string choice = Console.ReadLine();
+            switch (choice)
+            {
+                case "1":
+                    Console.WriteLine("The witness statements mention seeing a figure in a black coat near the house.");
+                    break;
+                case "2":
+                    Console.WriteLine("The suspect’s file shows a history of theft and violent behavior.");
+                    break;
+                case "3":
+                    if (inventory.Contains("Key"))
+                    {
+                        Console.WriteLine("You use the key to open the locked drawer and find a detailed map of the house with a marked spot.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("The drawer is locked. You need a key to open it.");
+                    }
+                    break;
+                case "4":
+                    if (inventory.Contains("Photograph"))
+                    {
+                        Console.WriteLine("The photograph reveals a family connection between the victim and the suspect.");
+                        hasFoundAllClues = true; //Oyuncunun tüm ipuçlarını bulduğunu gösterir
+                    }
+
+
+                    else
+                    {
+                        Console.WriteLine("You need the photograph to make a comparison.");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice. Returning to the main area of the police station.");
+                    break;
+            }
+            Console.WriteLine("Press any key to continue.");
+            Console.ReadKey();
+        }
+
+        static void SaveGame()
+        {
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(saveFile))
+                {
+                    writer.WriteLine(currentLocation);
+                    writer.WriteLine(hasFoundAllClues);
+                    writer.WriteLine(string.Join(",", inventory));
+                }
+                Console.WriteLine("Game saved successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving game: {ex.Message}");
+            }
+            Console.WriteLine("Press any key to continue.");
+            Console.ReadKey();
+        }
+
+        static void LoadGame()
+        {
+            if (File.Exists(saveFile))
+            {
+                try
+                {
+                    using (StreamReader reader = new StreamReader(saveFile))
+                    {
+                        currentLocation = reader.ReadLine();
+                        hasFoundAllClues = bool.Parse(reader.ReadLine());
+                        inventory = new List<string>(reader.ReadLine().Split(','));
+                    }
+                    Console.WriteLine("Game loaded successfully!");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error loading game: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No save file found. Starting a new game.");
+                StartGame();
+            }
+            Console.WriteLine("Press any key to continue.");
+            Console.ReadKey();
+        }
+
+        static void EndGame()
+        {
+            Console.Clear();
+            Console.WriteLine("Congratulations! You’ve solved the mystery.");  
+            Console.WriteLine("Summary of your findings:");
+            Console.WriteLine("- Key clues found: ");
+            foreach (var item in inventory)
+            {
+                Console.WriteLine($"  * {item}");
+            }
+            Console.WriteLine("\nThanks for playing Mystery in the Town!");
+            Console.WriteLine("Press any key to return to the main menu.");
+            Console.ReadKey();
+            MainMenu(); 
+        }
+    }
+}
